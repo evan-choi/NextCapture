@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 using MouseStruct = NextCapture.Interop.NativeMethods.MOUSEHOOKSTRUCT;
 
-namespace NextCapture.Input.Mouse
+namespace NextCapture.Input
 {
     internal class MouseHook : IHook<MouseStruct>
     {

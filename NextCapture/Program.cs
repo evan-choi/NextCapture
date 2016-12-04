@@ -1,4 +1,6 @@
-﻿using NextCapture.Input.Mouse;
+﻿using NextCapture.Input;
+using NextCapture.Input.Hotkey;
+using NextCapture.Utils;
 using System;
 using System.Windows.Forms;
 
@@ -6,7 +8,7 @@ namespace NextCapture
 {
     static class Program
     {
-        static MouseHook mHook;
+        public static MouseHook mHook;
 
         [STAThread]
         static void Main()
@@ -22,7 +24,8 @@ namespace NextCapture
         {
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
 
-            Utils.CursorUtil.Init();
+            HotkeyManager.Init();
+            CursorUtil.Init();
 
             mHook = new MouseHook();
             mHook.Hook();
@@ -32,7 +35,7 @@ namespace NextCapture
         {
             mHook.UnHook();
 
-            Utils.CursorUtil.Reset();
+            CursorUtil.Reset();
         }
     }
 }

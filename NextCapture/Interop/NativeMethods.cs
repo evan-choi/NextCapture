@@ -381,5 +381,15 @@ namespace NextCapture.Interop
             public int wHitTestCode = 0;
             public int dwExtraInfo = 0;
         }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public class KBDLLHOOKSTRUCT
+        {
+            public uint vkCode;
+            public uint scanCode;
+            public UnsafeNativeMethods.KBDLLHOOKSTRUCTFlags flags;
+            public uint time;
+            public UIntPtr dwExtraInfo;
+        }
     }
 }

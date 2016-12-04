@@ -58,6 +58,14 @@
     <Compile Include="Extensions\StringEx.cs" />
     <Compile Include="Input\IHook.cs" />
     <Compile Include="Input\IHookFilter.cs" />
+    <Compile Include="Input\Keyboard\Hotkey\Hotkey.cs" />
+    <Compile Include="Input\Keyboard\Hotkey\HotkeyEventArgs.cs" />
+    <Compile Include="Input\Keyboard\Hotkey\HotkeyManager.cs" />
+    <Compile Include="Input\Keyboard\Keyboard.cs" />
+    <Compile Include="Input\Keyboard\KeyboardHook.cs" />
+    <Compile Include="Input\Keyboard\KeyboardHookEventArgs.cs" />
+    <Compile Include="Input\Keyboard\Keys.cs" />
+    <Compile Include="Input\Keyboard\KeysConverter.cs" />
     <Compile Include="Input\Mouse\MouseHook.cs" />
     <Compile Include="Interop\Constants.cs" />
     <Compile Include="Windows\Form1.cs">

@@ -46,6 +46,14 @@ namespace NextCapture.Interop
         [ResourceExposure(ResourceScope.None)]
         public static extern IntPtr CallNextHookEx(IntPtr hhook, int code, IntPtr wparam, IntPtr lparam);
 
+        [DllImport(ExternDll.User32, ExactSpelling = true, CharSet = CharSet.Auto)]
+        [ResourceExposure(ResourceScope.None)]
+        public static extern IntPtr GetFocus();
+
+        [DllImport(ExternDll.User32, ExactSpelling = true, CharSet = CharSet.Auto)]
+        [ResourceExposure(ResourceScope.Process)]
+        public static extern IntPtr GetForegroundWindow();
+
         public enum HookType : int
         {
             WH_JOURNALRECORD = 0,
@@ -63,6 +71,17 @@ namespace NextCapture.Interop
             WH_CALLWNDPROCRET = 12,
             WH_KEYBOARD_LL = 13,
             WH_MOUSE_LL = 14,
+        }
+
+        public enum KBDLLHOOKSTRUCTFlags : uint
+        {
+            KF_EXTENDED = 0x0100,
+            KF_ALTDOWN = 0x2000,
+            LLKHF_DOWN = 0x00,
+            LLKHF_EXTENDED = KF_EXTENDED >> 8,
+            LLKHF_INJECTED = 0x10,
+            LLKHF_ALTDOWN = KF_ALTDOWN >> 8,
+            LLKHF_UP = 0x80,
         }
 
         public static bool SystemParametersInfo(NativeMethods.SPI nAction, int nParam, ref bool value, NativeMethods.SPIF nUpdate)
