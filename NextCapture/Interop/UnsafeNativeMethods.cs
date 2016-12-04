@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
@@ -53,6 +54,40 @@ namespace NextCapture.Interop
         [DllImport(ExternDll.User32, ExactSpelling = true, CharSet = CharSet.Auto)]
         [ResourceExposure(ResourceScope.Process)]
         public static extern IntPtr GetForegroundWindow();
+
+        [DllImport(ExternDll.User32, CharSet = CharSet.Auto)]
+        [ResourceExposure(ResourceScope.None)]
+        public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+        [DllImport(ExternDll.User32)]
+        [ResourceExposure(ResourceScope.None)]
+        public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+        [DllImport(ExternDll.User32, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool UpdateLayeredWindow(IntPtr hwnd, IntPtr hdcDst,
+            ref Point pptDst, ref Size psize, IntPtr hdcSrc, ref Point pprSrc,
+            Int32 crKey, ref NativeMethods.BLENDFUNCTION pblend, Int32 dwFlags);
+
+        [DllImport(ExternDll.Gdi32, CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern IntPtr CreateCompatibleDC(IntPtr hDC);
+
+        [DllImport(ExternDll.User32, CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern IntPtr GetDC(IntPtr hWnd);
+
+        [DllImport(ExternDll.User32, CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
+        [DllImport(ExternDll.Gdi32, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool DeleteDC(IntPtr hdc);
+
+        [DllImport(ExternDll.Gdi32, CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern IntPtr SelectObject(IntPtr hDC, IntPtr hObject);
+
+        [DllImport(ExternDll.Gdi32, CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool DeleteObject(IntPtr hObject);
 
         public enum HookType : int
         {
