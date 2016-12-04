@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NextCapture.Database;
+using System;
 using System.Windows.Forms;
 
 namespace NextCapture
@@ -9,6 +10,8 @@ namespace NextCapture
         static void Main()
         {
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+
+            Utils.CursorUtil.Init();
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

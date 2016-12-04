@@ -45,6 +45,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Database\Cursor\StringPairSerializable.cs" />
+    <Compile Include="Database\Cursor\CursorDB.cs" />
+    <Compile Include="Database\Serializer\KeySerializable.cs" />
+    <Compile Include="Database\DB.cs" />
+    <Compile Include="Database\Serializer\KeyValuePairSerializable.cs" />
+    <Compile Include="Extensions\DirectoryEx.cs" />
     <Compile Include="Extensions\StringEx.cs" />
     <Compile Include="Windows\Form1.cs">
       <SubType>Form</SubType>
@@ -81,7 +87,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

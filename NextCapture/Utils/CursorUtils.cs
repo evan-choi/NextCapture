@@ -1,6 +1,6 @@
 ﻿using Microsoft.Win32;
+using NextCapture.Database;
 using NextCapture.Interop;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace NextCapture.Utils
@@ -26,18 +26,25 @@ namespace NextCapture.Utils
 
     internal static class CursorUtil
     {
-        internal static Dictionary<CursorTypes, string> cursorBackup;
         internal static RegistryKey cursorReg;
 
         static CursorUtil()
         {
-            cursorBackup = new Dictionary<CursorTypes, string>();
-            cursorReg = Registry.CurrentUser.OpenSubKey(@"Control Panel\Cursors", true);
-
-            Backup();
+            Init();
         }
 
-        public static bool ChangeArrowCursor(CursorTypes cursor, string fileName)
+        public static void Init()
+        {
+            if (cursorReg == null)
+            {
+                cursorReg = Registry.CurrentUser.OpenSubKey(@"Control Panel\Cursors", true);
+
+                Reset();
+                Backup();
+            }
+        }
+
+        public static bool ChangeCursor(CursorTypes cursor, string fileName)
         {
             if (HasCursor(cursor.ToString()))
             {
@@ -63,7 +70,8 @@ namespace NextCapture.Utils
 
         public static void Backup()
         {
-            cursorBackup.Clear();
+            if (DB.Cursors.Count > 0)
+                return;
 
             foreach (string v in cursorReg
                 .GetValueNames()
@@ -73,19 +81,21 @@ namespace NextCapture.Utils
 
                 if (e.HasValue)
                 {
-                    cursorBackup[e.Value] = (string)cursorReg.GetValue(v);
-
-                    // TODO: Save to local database
+                    string value = (string)cursorReg.GetValue(v);
+                    
+                    DB.Cursors[v] = value;
                 }
             }
         }
 
         public static void Reset()
         {
-            foreach (var kv in cursorBackup)
-            {
+            foreach (var kv in DB.Cursors)
                 cursorReg.SetValue(kv.Key.ToString(), kv.Value);
-            }
+
+            DB.Cursors.Clear();
+
+            Update();
         }
 
         private static bool HasCursor(string cursorName)
