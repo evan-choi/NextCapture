@@ -1,9 +1,23 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace NextCapture.Interop
 {
     internal static class SafeNativeMethods
     {
+        [DllImport(ExternDll.User32, ExactSpelling = true, CharSet = CharSet.Auto)]
+        [ResourceExposure(ResourceScope.Process)]
+        public static extern int GetWindowThreadProcessId(HandleRef hWnd, out int lpdwProcessId);
+
+        [DllImport(ExternDll.Kernel32, ExactSpelling = true, CharSet = CharSet.Auto)]
+        [ResourceExposure(ResourceScope.Process)]
+        public static extern int GetCurrentThreadId();
+
+        [DllImport(ExternDll.Kernel32, CharSet = CharSet.Unicode, SetLastError = true)]
+        [ResourceExposure(ResourceScope.Process)]
+        public static extern IntPtr LoadLibrary(string libFilename);
+
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
         public class LOGFONT
         {

@@ -56,6 +56,10 @@
     <Compile Include="Database\Serializer\KeyValuePairSerializable.cs" />
     <Compile Include="Extensions\DirectoryEx.cs" />
     <Compile Include="Extensions\StringEx.cs" />
+    <Compile Include="Input\IHook.cs" />
+    <Compile Include="Input\IHookFilter.cs" />
+    <Compile Include="Input\Mouse\MouseHook.cs" />
+    <Compile Include="Interop\Constants.cs" />
     <Compile Include="Windows\Form1.cs">
       <SubType>Form</SubType>
     </Compile>

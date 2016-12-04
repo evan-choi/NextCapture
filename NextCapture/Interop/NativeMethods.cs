@@ -3,8 +3,12 @@ using System.Runtime.InteropServices;
 
 namespace NextCapture.Interop
 {
-    internal static class NativeMethods
+    internal static partial class NativeMethods
     {
+        public static HandleRef NullHandleRef = new HandleRef(null, IntPtr.Zero);
+
+        public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
+
         [Flags]
         internal enum SPI : int
         {
@@ -366,6 +370,16 @@ namespace NextCapture.Interop
             public byte lfPitchAndFamily;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
             public string lfFaceName;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public class MOUSEHOOKSTRUCT
+        {
+            public int x = 0;
+            public int y = 0;
+            public IntPtr hWnd = IntPtr.Zero;
+            public int wHitTestCode = 0;
+            public int dwExtraInfo = 0;
         }
     }
 }
