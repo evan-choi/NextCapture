@@ -12,13 +12,15 @@ using System.Windows.Forms;
 using MouseStruct = NextCapture.Interop.NativeMethods.MOUSEHOOKSTRUCT;
 using NextCapture.Interop;
 using System.Runtime.InteropServices;
+using NextCapture.Utils;
 
 namespace NextCapture
 {
-    public class Form1 : LayeredWindow
+    public class Form1 : LayeredWindow, IHookFilter<MouseStruct>
     {
-        NotifyIcon notify;
+        int lastZOrder = 0;
 
+        NotifyIcon notify;
         SolidBrush whiteBrush;
 
         public Form1() : base()
@@ -26,7 +28,7 @@ namespace NextCapture
             InitializeNotify();
 
             whiteBrush = new SolidBrush(Color.FromArgb((int)(255 * 0.4), Color.White));
-            Program.mHook.Filters.Add(new MouseMagenticFilter(this));
+            Program.MouseHook.Filters.Add(this);
         }
 
         private void InitializeNotify()
@@ -62,6 +64,12 @@ namespace NextCapture
             base.OnClosed(e);
         }
 
+        protected override void OnLostFocus(EventArgs e)
+        {
+            base.OnLostFocus(e);
+            this.BringToTopWindow();
+        }
+
         private void UpdateLayout(Point position)
         {
             var cross = Properties.Resources.Cross;
@@ -88,23 +96,28 @@ namespace NextCapture
 
             DrawBitmap(bmp, 255);
             bmp.Dispose();
+
+            // ISSUE: Catch the behind to window
+            UpdateOnTop();
         }
 
-        class MouseMagenticFilter : IHookFilter<MouseStruct>
+        void UpdateOnTop()
         {
-            Form1 Parent { get; }
+            int zorder = this.GetZOrder();
 
-            public MouseMagenticFilter(Form1 parent)
+            if (zorder < lastZOrder)
             {
-                this.Parent = parent;
+                this.BringToTopWindow();   
             }
 
-            public bool HookProc(IntPtr wParam, IntPtr lParam, MouseStruct data)
-            {
-                Parent.UpdateLayout(MousePosition);
+            lastZOrder = zorder;
+        }
 
-                return false;
-            }
+        bool IHookFilter<MouseStruct>.HookProc(IntPtr wParam, IntPtr lParam, MouseStruct data)
+        {
+            this.UpdateLayout(MousePosition);
+
+            return false;
         }
     }
 }

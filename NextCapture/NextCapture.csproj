@@ -71,6 +71,7 @@
     <Compile Include="Input\Keyboard\KeysConverter.cs" />
     <Compile Include="Input\Mouse\MouseHook.cs" />
     <Compile Include="Interop\Constants.cs" />
+    <Compile Include="Utils\HwndHelper.cs" />
     <Compile Include="Windows\Form1.cs">
       <SubType>Form</SubType>
     </Compile>

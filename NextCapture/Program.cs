@@ -9,7 +9,7 @@ namespace NextCapture
 {
     static class Program
     {
-        public static MouseHook mHook;
+        public static MouseHook MouseHook;
 
         [STAThread]
         static void Main()
@@ -28,8 +28,8 @@ namespace NextCapture
             HotkeyManager.Init();
             CursorUtil.Init();
             
-            mHook = new MouseHook();
-            mHook.Hook();
+            MouseHook = new MouseHook();
+            MouseHook.Hook();
 
             // TODO: Debug code to Logic
             File.WriteAllBytes("temp.ani", Properties.Resources.trans);
@@ -42,7 +42,7 @@ namespace NextCapture
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            mHook.UnHook();
+            MouseHook.UnHook();
 
             CursorUtil.Reset();
         }
