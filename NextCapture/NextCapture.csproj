@@ -52,6 +52,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Bus\ClipboardBus.cs" />
+    <Compile Include="Core\Bus\DesktopBus.cs" />
+    <Compile Include="Core\Bus\BitmapDataBus.cs" />
+    <Compile Include="Core\Bus\IDataBus.cs" />
+    <Compile Include="Core\OSXCapture.cs" />
     <Compile Include="Database\Cursor\StringPairSerializable.cs" />
     <Compile Include="Database\Cursor\CursorDB.cs" />
     <Compile Include="Database\Serializer\KeySerializable.cs" />
