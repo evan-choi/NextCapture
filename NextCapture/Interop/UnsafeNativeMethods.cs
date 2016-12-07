@@ -89,10 +89,17 @@ namespace NextCapture.Interop
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool DeleteObject(IntPtr hObject);
 
-        [DllImport("user32.dll")]
+        [DllImport(ExternDll.Gdi32, EntryPoint = "CreateCompatibleBitmap")]
+        public static extern IntPtr CreateCompatibleBitmap([In] IntPtr hdc, int nWidth, int nHeight);
+
+        [DllImport(ExternDll.Gdi32, EntryPoint = "BitBlt", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool BitBlt([In] IntPtr hdc, int nXDest, int nYDest, int nWidth, int nHeight, [In] IntPtr hdcSrc, int nXSrc, int nYSrc, NativeMethods.TernaryRasterOperations dwRop);
+
+        [DllImport(ExternDll.User32)]
         public static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
 
-        [DllImport("user32.dll", SetLastError = true)]
+        [DllImport(ExternDll.User32, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, int uFlags);
 

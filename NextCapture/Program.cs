@@ -1,4 +1,5 @@
-﻿using NextCapture.Input;
+﻿using NextCapture.Core;
+using NextCapture.Input;
 using NextCapture.Input.Hotkey;
 using NextCapture.Utils;
 using System;
@@ -10,14 +11,16 @@ namespace NextCapture
     static class Program
     {
         public static MouseHook MouseHook;
+        public static OSXCapture OSXCapture;
 
         [STAThread]
         static void Main()
         {
-            Initialize();
-
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            Initialize();
+
             Application.Run(new Form1());
         }
 
@@ -25,19 +28,16 @@ namespace NextCapture
         {
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
 
+            Dispatcher.Init();
             HotkeyManager.Init();
             CursorUtil.Init();
-            
+
+            OSXCapture = new OSXCapture();
+
             MouseHook = new MouseHook();
             MouseHook.Hook();
 
-            // TODO: Debug code to Logic
-            File.WriteAllBytes("temp.ani", Properties.Resources.trans);
-
-            foreach(CursorTypes c in Enum.GetValues(typeof(CursorTypes)))
-            {
-                CursorUtil.ChangeCursor(c, "temp.ani");
-            }
+            MouseHook.Filters.Add(OSXCapture);
         }
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)

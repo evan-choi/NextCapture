@@ -13,6 +13,7 @@ using MouseStruct = NextCapture.Interop.NativeMethods.MOUSEHOOKSTRUCT;
 using NextCapture.Interop;
 using System.Runtime.InteropServices;
 using NextCapture.Utils;
+using System.IO;
 
 namespace NextCapture
 {
@@ -28,7 +29,30 @@ namespace NextCapture
             InitializeNotify();
 
             whiteBrush = new SolidBrush(Color.FromArgb((int)(255 * 0.4), Color.White));
+
             Program.MouseHook.Filters.Add(this);
+            Program.OSXCapture.CaptureModeChanged += OSXCapture_CaptureModeChanged;
+        }
+
+        private void OSXCapture_CaptureModeChanged(object sender, EventArgs e)
+        {
+            switch (Program.OSXCapture.CaptureMode)
+            {
+                case Core.CaptureMode.Unknown:
+                    //CursorUtil.Reset();
+                    //this.Opacity = 0;
+                    using (var bmp = new Bitmap(1, 1))
+                    {
+                        DrawBitmap(bmp, 0);
+                    }
+                    break;
+
+                case Core.CaptureMode.Drag:
+                    //OverwriteCursor();
+                    //this.Opacity = 1;
+                    UpdateLayout(MousePosition);
+                    break;
+            }
         }
 
         private void InitializeNotify()
@@ -115,9 +139,21 @@ namespace NextCapture
 
         bool IHookFilter<MouseStruct>.HookProc(IntPtr wParam, IntPtr lParam, MouseStruct data)
         {
-            this.UpdateLayout(MousePosition);
+            if (Program.OSXCapture.CaptureMode != Core.CaptureMode.Unknown)
+                this.UpdateLayout(MousePosition);
 
             return false;
+        }
+
+        void OverwriteCursor()
+        {
+            if (!File.Exists("temp.ani"))
+                File.WriteAllBytes("temp.ani", Properties.Resources.trans);
+
+            foreach (CursorTypes c in Enum.GetValues(typeof(CursorTypes)))
+            {
+                CursorUtil.ChangeCursor(c, "temp.ani");
+            }
         }
     }
 }

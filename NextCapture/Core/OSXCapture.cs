@@ -1,11 +1,16 @@
 ﻿using NextCapture.Input;
 using NextCapture.Input.Hotkey;
+using NextCapture.Utils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+
+using MouseStruct = NextCapture.Interop.NativeMethods.MOUSEHOOKSTRUCT;
+using NextCapture.Interop;
 
 namespace NextCapture.Core
 {
@@ -25,7 +30,7 @@ namespace NextCapture.Core
     }
 
 
-    internal class OSXCapture
+    internal class OSXCapture : IHookFilter<MouseStruct>
     {
         public event EventHandler CaptureModeChanged;
 
@@ -56,7 +61,7 @@ namespace NextCapture.Core
             InitBitmapBuses();
             InitHotkey();
         }
-
+        
         private void InitHotkey()
         {
             HotkeyManager.Register("Capture_Cancel", new Hotkey()
@@ -147,6 +152,10 @@ namespace NextCapture.Core
                         break;
 
                     case CaptureMode.FullScreen:
+                        var screen = Screen.FromPoint(Control.MousePosition);
+
+                        EndCapture(ScreenCapture.Capture(screen.Bounds));
+
                         break;
 
                     case CaptureMode.Drag:
@@ -160,7 +169,45 @@ namespace NextCapture.Core
 
         public void EndCapture(Bitmap bitmap)
         {
-            
+            CaptureMode = CaptureMode.Unknown;
+
+            if (bitmap == null) return;
+
+            foreach (var bus in BitmapBuses.Reverse<IDataBus<Bitmap>>())
+            {
+                if (bus.SendData(bitmap))
+                    return;
+            }
+        }
+
+        public bool HookProc(IntPtr wParam, IntPtr lParam, MouseStruct data)
+        {
+            switch (wParam.ToInt32())
+            {
+                case NativeMethods.WM_LBUTTONDOWN:
+                    if (CaptureMode != CaptureMode.Unknown)
+                    {
+                        // TODO: Begin Drag or Win Focusing
+                        return true;
+                    }
+                    break;
+
+                case NativeMethods.WM_LBUTTONUP:
+                    if (CaptureMode == CaptureMode.Drag)
+                    {
+                        // TODO: End Drag
+                        EndCapture(null);
+                        return true;
+                    }
+                    else if (CaptureMode == CaptureMode.Window)
+                    {
+                        // TODO: End Win Focusing
+                        return true;
+                    }
+                    break;
+            }
+
+            return false;
         }
     }
 }
