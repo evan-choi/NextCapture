@@ -501,5 +501,14 @@ namespace NextCapture.Interop
             public uint time;
             public UIntPtr dwExtraInfo;
         }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MARGINS
+        {
+            public int cxLeftWidth;
+            public int cxRightWidth;
+            public int cyTopHeight;
+            public int cyBottomHeight;
+        };
     }
 }

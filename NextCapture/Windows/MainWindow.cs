@@ -39,7 +39,7 @@ namespace NextCapture
             switch (Program.OSXCapture.CaptureMode)
             {
                 case Core.CaptureMode.Unknown:
-                    //CursorUtil.Reset();
+                    CursorUtil.Reset();
                     //this.Opacity = 0;
                     using (var bmp = new Bitmap(1, 1))
                     {
@@ -48,7 +48,7 @@ namespace NextCapture
                     break;
 
                 case Core.CaptureMode.Drag:
-                    //OverwriteCursor();
+                    OverwriteCursor();
                     //this.Opacity = 1;
                     UpdateLayout(MousePosition);
                     break;
@@ -74,7 +74,10 @@ namespace NextCapture
 
         private void NotifyIcon_Info(object sender, EventArgs e)
         {
-            
+            var infoWindow = new InfoWindow();
+
+            infoWindow.Show();
+            infoWindow.Activate();
         }
 
         private void NotifyIcon_Close(object sender, EventArgs e)

@@ -68,14 +68,14 @@ namespace NextCapture
                 };
                 
                 UnsafeNativeMethods.UpdateLayeredWindow(
-                    this.Handle,    
-                    screenDc,       
+                    this.Handle,
+                    screenDc,
                     ref newLocation,
-                    ref newSize,    
-                    memDc,                       
-                    ref sourceLocation, 
-                    0,               
-                    ref blend,       
+                    ref newSize,
+                    memDc,
+                    ref sourceLocation,
+                    0,
+                    ref blend,
                     ULW_ALPHA);
             }
             finally

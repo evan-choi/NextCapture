@@ -103,6 +103,26 @@ namespace NextCapture.Interop
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, int uFlags);
 
+        [DllImport(ExternDll.Gdi32, EntryPoint = "CreateRoundRectRgn")]
+        public static extern IntPtr CreateRoundRectRgn
+        (
+            int nLeftRect, // x-coordinate of upper-left corner
+            int nTopRect, // y-coordinate of upper-left corner
+            int nRightRect, // x-coordinate of lower-right corner
+            int nBottomRect, // y-coordinate of lower-right corner
+            int nWidthEllipse, // height of ellipse
+            int nHeightEllipse // width of ellipse
+         );
+
+        [DllImport(ExternDll.DwmAPI)]
+        public static extern int DwmExtendFrameIntoClientArea(IntPtr hWnd, ref NativeMethods.MARGINS pMarInset);
+
+        [DllImport(ExternDll.DwmAPI)]
+        public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+
+        [DllImport(ExternDll.DwmAPI)]
+        public static extern int DwmIsCompositionEnabled(ref int pfEnabled);
+
         public enum HookType : int
         {
             WH_JOURNALRECORD = 0,

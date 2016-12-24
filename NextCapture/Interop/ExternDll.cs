@@ -6,6 +6,7 @@
         public const string Advapi32 = "advapi32.dll";
         public const string Comctl32 = "comctl32.dll";
         public const string Comdlg32 = "comdlg32.dll";
+        public const string DwmAPI = "dwmapi.dll";
         public const string Gdi32 = "gdi32.dll";
         public const string Gdiplus = "gdiplus.dll";
         public const string Hhctrl = "hhctrl.ocx";
