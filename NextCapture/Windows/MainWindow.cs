@@ -24,35 +24,25 @@ namespace NextCapture
         NotifyIcon notify;
         SolidBrush whiteBrush;
 
+        DragWindow dWindow;
+
         public MainWindow() : base()
         {
             InitializeNotify();
+            InitializeDrag();
 
             whiteBrush = new SolidBrush(Color.FromArgb((int)(255 * 0.4), Color.White));
 
             Program.MouseHook.Filters.Add(this);
             Program.OSXCapture.CaptureModeChanged += OSXCapture_CaptureModeChanged;
+            Program.OSXCapture.BeginDragCapture += OSXCapture_BeginDragCapture;
+            Program.OSXCapture.EndDragCapture += OSXCapture_EndDragCapture;
         }
 
-        private void OSXCapture_CaptureModeChanged(object sender, EventArgs e)
+        private void InitializeDrag()
         {
-            switch (Program.OSXCapture.CaptureMode)
-            {
-                case Core.CaptureMode.Unknown:
-                    SystemCursor.Show();
-                    //this.Opacity = 0;
-                    using (var bmp = new Bitmap(1, 1))
-                    {
-                        DrawBitmap(bmp, 0);
-                    }
-                    break;
-
-                case Core.CaptureMode.Drag:
-                    SystemCursor.Hide();
-                    //this.Opacity = 1;
-                    UpdateLayout(MousePosition);
-                    break;
-            }
+            dWindow = new DragWindow();
+            this.Owner = dWindow;
         }
 
         private void InitializeNotify()
@@ -68,8 +58,53 @@ namespace NextCapture
                 Text = "NextCapture",
                 ContextMenu = ctx
             };
-            
+
             notify.Visible = true;
+        }
+
+        void DestoryDragLayer()
+        {
+            dWindow.Hide();
+        }
+
+        void CreateDragLayer(Point pos)
+        {
+            dWindow.Setup(pos);
+            dWindow.UpdateLayout(pos);
+            dWindow.Show();
+        }
+
+        private void OSXCapture_EndDragCapture(object sender, Point e)
+        {
+            DestoryDragLayer();
+        }
+
+        private void OSXCapture_BeginDragCapture(object sender, Point e)
+        {
+            CreateDragLayer(e);
+            UpdateLayout(e, Point.Empty);
+        }
+
+        private void OSXCapture_CaptureModeChanged(object sender, EventArgs e)
+        {
+            switch (Program.OSXCapture.CaptureMode)
+            {
+                case Core.CaptureMode.Unknown:
+                    SystemCursor.Show();
+                    DestoryDragLayer();
+
+                    using (var bmp = new Bitmap(1, 1))
+                        DrawBitmap(bmp, 0);
+
+                    break;
+
+                case Core.CaptureMode.Drag:
+                    SystemCursor.Hide();
+
+                    UpdateLayout(MousePosition, MousePosition);
+
+                    break;
+            }
         }
 
         private void NotifyIcon_Info(object sender, EventArgs e)
@@ -97,7 +132,7 @@ namespace NextCapture
             this.BringToTopWindow();
         }
 
-        private void UpdateLayout(Point position)
+        private void UpdateLayout(Point position, Point displayPosition)
         {
             var cross = Properties.Resources.Cross;
             var bmp = new Bitmap(cross.Width + 30, cross.Height + 15);
@@ -111,11 +146,11 @@ namespace NextCapture
                     var xPt = new Point(cross.Width - 6, cross.Height - 6);
                     var yPt = new Point(cross.Width - 6, cross.Height + 4);
 
-                    g.DrawString(position.X.ToString(), f, whiteBrush, xPt + new Size(1, 1));
-                    g.DrawString(position.Y.ToString(), f, whiteBrush, yPt + new Size(1, 1));
+                    g.DrawString(displayPosition.X.ToString(), f, whiteBrush, xPt + new Size(1, 1));
+                    g.DrawString(displayPosition.Y.ToString(), f, whiteBrush, yPt + new Size(1, 1));
 
-                    g.DrawString(position.X.ToString(), f, Brushes.Black, xPt);
-                    g.DrawString(position.Y.ToString(), f, Brushes.Black, yPt);
+                    g.DrawString(displayPosition.X.ToString(), f, Brushes.Black, xPt);
+                    g.DrawString(displayPosition.Y.ToString(), f, Brushes.Black, yPt);
                 }   
             }
 
@@ -143,7 +178,24 @@ namespace NextCapture
         bool IHookFilter<MouseStruct>.HookProc(IntPtr wParam, IntPtr lParam, MouseStruct data)
         {
             if (Program.OSXCapture.CaptureMode != Core.CaptureMode.Unknown)
-                this.UpdateLayout(MousePosition);
+            {
+                Point position = MousePosition;
+                Point display = position;
+
+                if (Program.OSXCapture.IsDragging)
+                {
+                    var rect = RectangleEx.GetRectangle(dWindow.DragStartPosition, MousePosition);
+
+                    display = (Point)rect.Size;
+                }
+
+                this.UpdateLayout(position, display);
+            }
+            
+            if (dWindow != null && Program.OSXCapture.IsDragging)
+            {
+                dWindow.UpdateLayout(MousePosition);
+            }
 
             return false;
         }

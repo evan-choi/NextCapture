@@ -70,8 +70,12 @@
     <Compile Include="Interop\Constants.cs" />
     <Compile Include="Utils\Dispatcher.cs" />
     <Compile Include="Utils\HwndHelper.cs" />
+    <Compile Include="Utils\RectangleEx.cs" />
     <Compile Include="Utils\ScreenCapture.cs" />
     <Compile Include="Windows\AeroWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Windows\DragWindow.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Windows\InfoWindow.cs">

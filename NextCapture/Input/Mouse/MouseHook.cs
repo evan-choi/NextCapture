@@ -61,7 +61,7 @@ namespace NextCapture.Input
             if (nCode == 0)
             {
                 var mhs = (MouseStruct)Marshal.PtrToStructure(lParam, typeof(MouseStruct));
-
+                
                 foreach (var filter in Filters)
                 {
                     if (filter.HookProc(wParam, lParam, mhs))

@@ -8,6 +8,9 @@ namespace NextCapture.Utils
     {
         public static Bitmap Capture(Rectangle area)
         {
+            if (area.Width * area.Height <= 1)
+                return null;
+
             IntPtr hDest = IntPtr.Zero;
 
             IntPtr hdc = UnsafeNativeMethods.GetDC(IntPtr.Zero);

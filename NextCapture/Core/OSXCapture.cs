@@ -34,6 +34,9 @@ namespace NextCapture.Core
     {
         public event EventHandler CaptureModeChanged;
 
+        public event EventHandler<Point> BeginDragCapture;
+        public event EventHandler<Point> EndDragCapture;
+
         public List<IDataBus<Bitmap>> BitmapBuses { get; } 
             = new List<IDataBus<Bitmap>>();
 
@@ -53,8 +56,18 @@ namespace NextCapture.Core
             }
         }
 
+        private bool isDragging = false;
+        public bool IsDragging
+        {
+            get
+            {
+                return isDragging;
+            }
+        }
+
         private BitmapDataBus deskBus;
         private BitmapDataBus clipBus;
+        private Point dragStartPosition;
 
         public OSXCapture()
         {
@@ -187,7 +200,20 @@ namespace NextCapture.Core
                 case NativeMethods.WM_LBUTTONDOWN:
                     if (CaptureMode != CaptureMode.Unknown)
                     {
-                        // TODO: Begin Drag or Win Focusing
+                        switch (CaptureMode)
+                        {
+                            case CaptureMode.Drag:
+                                isDragging = true;
+
+                                dragStartPosition = new Point(data.x, data.y);
+                                BeginDragCapture?.Invoke(this, dragStartPosition);
+                                break;
+
+                            case CaptureMode.Window:
+                                // TODO: Window Capture
+                                break;
+                        }
+
                         return true;
                     }
                     break;
@@ -195,8 +221,16 @@ namespace NextCapture.Core
                 case NativeMethods.WM_LBUTTONUP:
                     if (CaptureMode == CaptureMode.Drag)
                     {
-                        // TODO: End Drag
-                        EndCapture(null);
+                        isDragging = false;
+
+                        var dragEndPosition = new Point(data.x, data.y);
+                        EndDragCapture?.Invoke(this, dragEndPosition);
+
+                        EndCapture(ScreenCapture.Capture(
+                            RectangleEx.GetRectangle(
+                                dragStartPosition, 
+                                dragEndPosition)));
+
                         return true;
                     }
                     else if (CaptureMode == CaptureMode.Window)
