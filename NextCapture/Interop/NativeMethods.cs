@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 
 namespace NextCapture.Interop
 {
     internal static partial class NativeMethods
     {
-        public static HandleRef NullHandleRef = new HandleRef(null, IntPtr.Zero);
-
         public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
 
         [Flags]
@@ -388,13 +385,6 @@ namespace NextCapture.Interop
             public byte SourceConstantAlpha;
             public byte AlphaFormat;
 
-        }
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-        public struct HIGHCONTRAST_I
-        {
-            public int cbSize;
-            public int dwFlags;
-            public IntPtr lpszDefaultScheme;
         }
 
         [StructLayout(LayoutKind.Sequential)]

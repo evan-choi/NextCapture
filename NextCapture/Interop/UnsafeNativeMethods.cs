@@ -7,33 +7,8 @@ namespace NextCapture.Interop
 {
     internal static class UnsafeNativeMethods
     {
-        [DllImport(ExternDll.User32, CharSet = CharSet.Auto)]
-        [ResourceExposure(ResourceScope.None)]
-        public static extern bool SystemParametersInfo(int nAction, int nParam, ref NativeMethods.RECT rc, int nUpdate);
-
-        [DllImport(ExternDll.User32, CharSet = CharSet.Auto)]
-        [ResourceExposure(ResourceScope.None)]
-        public static extern bool SystemParametersInfo(int nAction, int nParam, ref int value, int ignore);
-
-        [DllImport(ExternDll.User32, CharSet = CharSet.Auto)]
-        [ResourceExposure(ResourceScope.None)]
-        public static extern bool SystemParametersInfo(int nAction, int nParam, ref bool value, int ignore);
-        
-        [DllImport(ExternDll.User32, CharSet = CharSet.Auto)]
-        [ResourceExposure(ResourceScope.None)]
-        public static extern bool SystemParametersInfo(int nAction, int nParam, ref NativeMethods.HIGHCONTRAST_I rc, int nUpdate);
-
-        [DllImport(ExternDll.User32, CharSet = CharSet.Auto)]
-        [ResourceExposure(ResourceScope.None)]
-        public static extern bool SystemParametersInfo(int nAction, int nParam, [In, Out] NativeMethods.NONCLIENTMETRICS metrics, int nUpdate);
-        
-        [DllImport(ExternDll.User32, CharSet = CharSet.Auto)]
-        [ResourceExposure(ResourceScope.None)]
-        public static extern bool SystemParametersInfo(int nAction, int nParam, [In, Out] NativeMethods.LOGFONT font, int nUpdate);
-
-        [DllImport(ExternDll.User32, CharSet = CharSet.Auto)]
-        [ResourceExposure(ResourceScope.None)]
-        public static extern bool SystemParametersInfo(int nAction, int nParam, bool[] flag, bool nUpdate);
+        [DllImport(ExternDll.User32, SetLastError = true)]
+        public static extern bool SystemParametersInfo(NativeMethods.SPI uiAction, uint uiParam, IntPtr pvParam, NativeMethods.SPIF fWinIni);
 
         [DllImport(ExternDll.User32, CharSet = CharSet.Auto)]
         [ResourceExposure(ResourceScope.None)]
@@ -103,17 +78,18 @@ namespace NextCapture.Interop
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, int uFlags);
 
-        [DllImport(ExternDll.Gdi32, EntryPoint = "CreateRoundRectRgn")]
-        public static extern IntPtr CreateRoundRectRgn
-        (
-            int nLeftRect, // x-coordinate of upper-left corner
-            int nTopRect, // y-coordinate of upper-left corner
-            int nRightRect, // x-coordinate of lower-right corner
-            int nBottomRect, // y-coordinate of lower-right corner
-            int nWidthEllipse, // height of ellipse
-            int nHeightEllipse // width of ellipse
-         );
+        [DllImport(ExternDll.User32)]
+        public static extern IntPtr LoadCursorFromFile(string lpFileName);
+        
+        [DllImport(ExternDll.User32)]
+        public static extern int DestroyCursor(IntPtr hCursor);
 
+        [DllImport(ExternDll.User32, SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern IntPtr CopyIcon(IntPtr hcur);
+
+        [DllImport(ExternDll.User32)]
+        public static extern bool SetSystemCursor(IntPtr hCursor, uint id);
+        
         [DllImport(ExternDll.DwmAPI)]
         public static extern int DwmExtendFrameIntoClientArea(IntPtr hWnd, ref NativeMethods.MARGINS pMarInset);
 
@@ -151,11 +127,6 @@ namespace NextCapture.Interop
             LLKHF_INJECTED = 0x10,
             LLKHF_ALTDOWN = KF_ALTDOWN >> 8,
             LLKHF_UP = 0x80,
-        }
-
-        public static bool SystemParametersInfo(NativeMethods.SPI nAction, int nParam, ref bool value, NativeMethods.SPIF nUpdate)
-        {
-            return SystemParametersInfo((int)nAction, nParam, ref value, (int)nUpdate);
         }
     }
 }

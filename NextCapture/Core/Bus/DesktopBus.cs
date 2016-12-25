@@ -16,7 +16,7 @@ namespace NextCapture.Core
         {
             try
             {
-                data.Save($"{Directory}\\hello.png");
+                data.Save($"{Directory}\\스크린샷 {DateTime.Now.ToString("yyyy-MM-dd tt h.mm.ss.fff")}.png");
             }
             catch
             {

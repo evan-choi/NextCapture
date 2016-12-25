@@ -8,7 +8,7 @@ using MouseStruct = NextCapture.Interop.NativeMethods.MOUSEHOOKSTRUCT;
 
 namespace NextCapture.Input
 {
-    internal class MouseHook : IHook<MouseStruct>
+    internal class MouseHook : IHook<MouseStruct>, IDisposable
     {
         public bool IsHooked { get; private set; }
 
@@ -17,6 +17,11 @@ namespace NextCapture.Input
         private IntPtr mHookHandle;
         private NativeMethods.HookProc mHookProc;
         
+        ~MouseHook()
+        {
+            this.Dispose();
+        }
+
         public bool Hook()
         {
             if (mHookHandle != IntPtr.Zero)
@@ -67,6 +72,11 @@ namespace NextCapture.Input
             }
 
             return UnsafeNativeMethods.CallNextHookEx(mHookHandle, nCode, wParam, lParam);
+        }
+
+        public void Dispose()
+        {
+            UnHook();
         }
     }
 }

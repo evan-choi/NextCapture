@@ -7,7 +7,7 @@ using KeyboardStruct = NextCapture.Interop.NativeMethods.KBDLLHOOKSTRUCT;
 
 namespace NextCapture.Input
 {
-    internal class KeyboardHook : IHook<KeyboardStruct>
+    internal class KeyboardHook : IHook<KeyboardStruct>, IDisposable
     {
         public event EventHandler<KeyboardHookEventArgs> KeyDown;
         public event EventHandler<KeyboardHookEventArgs> KeyUp;
@@ -21,6 +21,11 @@ namespace NextCapture.Input
         private IntPtr mHookHandle;
         private NativeMethods.HookProc mHookProc;
         private Dictionary<VKeys, DateTime> keyDict = new Dictionary<VKeys, DateTime>();
+
+        ~KeyboardHook()
+        {
+            this.Dispose();
+        }
 
         public bool Hook()
         {
@@ -105,6 +110,11 @@ namespace NextCapture.Input
             }
 
             return UnsafeNativeMethods.CallNextHookEx(mHookHandle, nCode, wParam, lParam);
+        }
+
+        public void Dispose()
+        {
+            UnHook();
         }
     }
 }

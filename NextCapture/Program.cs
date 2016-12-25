@@ -21,7 +21,7 @@ namespace NextCapture
 
             Initialize();
 
-            Application.Run(new Form1());
+            Application.Run(new MainWindow());
         }
 
         private static void Initialize()
@@ -30,7 +30,7 @@ namespace NextCapture
 
             Dispatcher.Init();
             HotkeyManager.Init();
-            CursorUtil.Init();
+            SystemCursor.Show();
 
             OSXCapture = new OSXCapture();
 
@@ -44,7 +44,7 @@ namespace NextCapture
         {
             MouseHook.UnHook();
 
-            CursorUtil.Reset();
+            SystemCursor.Show();
         }
     }
 }

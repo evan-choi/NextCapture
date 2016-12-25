@@ -17,14 +17,14 @@ using System.IO;
 
 namespace NextCapture
 {
-    public class Form1 : LayeredWindow, IHookFilter<MouseStruct>
+    public sealed class MainWindow : LayeredWindow, IHookFilter<MouseStruct>
     {
         int lastZOrder = 0;
 
         NotifyIcon notify;
         SolidBrush whiteBrush;
 
-        public Form1() : base()
+        public MainWindow() : base()
         {
             InitializeNotify();
 
@@ -39,7 +39,7 @@ namespace NextCapture
             switch (Program.OSXCapture.CaptureMode)
             {
                 case Core.CaptureMode.Unknown:
-                    CursorUtil.Reset();
+                    SystemCursor.Show();
                     //this.Opacity = 0;
                     using (var bmp = new Bitmap(1, 1))
                     {
@@ -48,7 +48,7 @@ namespace NextCapture
                     break;
 
                 case Core.CaptureMode.Drag:
-                    OverwriteCursor();
+                    SystemCursor.Hide();
                     //this.Opacity = 1;
                     UpdateLayout(MousePosition);
                     break;
@@ -146,17 +146,6 @@ namespace NextCapture
                 this.UpdateLayout(MousePosition);
 
             return false;
-        }
-
-        void OverwriteCursor()
-        {
-            if (!File.Exists("temp.ani"))
-                File.WriteAllBytes("temp.ani", Properties.Resources.trans);
-
-            foreach (CursorTypes c in Enum.GetValues(typeof(CursorTypes)))
-            {
-                CursorUtil.ChangeCursor(c, "temp.ani");
-            }
         }
     }
 }
