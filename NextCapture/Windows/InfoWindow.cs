@@ -23,6 +23,8 @@ namespace NextCapture
         public InfoWindow() : base()
         {
             InitializeComponent();
+
+            lblVersion.Text = $"Ver. {Config.Version.ToString()}";
         }
 
         private void InitializeComponent()
@@ -59,7 +61,7 @@ namespace NextCapture
             this.lblVersion.Name = "lblVersion";
             this.lblVersion.Size = new System.Drawing.Size(212, 32);
             this.lblVersion.TabIndex = 1;
-            this.lblVersion.Text = "Ver. 1.0";
+            this.lblVersion.Text = "Ver. 1.0.0 RC";
             this.lblVersion.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // lblState
