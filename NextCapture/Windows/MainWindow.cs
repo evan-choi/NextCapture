@@ -62,12 +62,12 @@ namespace NextCapture
             notify.Visible = true;
         }
 
-        void DestoryDragLayer()
+        void HideDragLayer()
         {
             dWindow.Hide();
         }
 
-        void CreateDragLayer(Point pos)
+        void ShowDragLayer(Point pos)
         {
             dWindow.Setup(pos);
             dWindow.UpdateLayout(pos);
@@ -76,12 +76,13 @@ namespace NextCapture
 
         private void OSXCapture_EndDragCapture(object sender, Point e)
         {
-            DestoryDragLayer();
+            ClearLayer();
+            HideDragLayer();
         }
 
         private void OSXCapture_BeginDragCapture(object sender, Point e)
         {
-            CreateDragLayer(e);
+            ShowDragLayer(e);
             UpdateLayout(e, Point.Empty);
         }
 
@@ -91,10 +92,9 @@ namespace NextCapture
             {
                 case Core.CaptureMode.Unknown:
                     SystemCursor.Show();
-                    DestoryDragLayer();
 
-                    using (var bmp = new Bitmap(1, 1))
-                        DrawBitmap(bmp, 0);
+                    HideDragLayer();
+                    ClearLayer();
 
                     break;
 

@@ -43,6 +43,12 @@ namespace NextCapture
             return OSFeature.Feature.IsPresent(OSFeature.LayeredWindows);
         }
 
+        protected void ClearLayer()
+        {
+            using (var bmp = new Bitmap(1, 1))
+                DrawBitmap(bmp, 0);
+        }
+
         protected void DrawBitmap(Bitmap bitmap, int opacity)
         {
             IntPtr screenDc = UnsafeNativeMethods.GetDC(IntPtr.Zero);
