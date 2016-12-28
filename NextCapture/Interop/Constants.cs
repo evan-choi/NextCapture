@@ -2,6 +2,10 @@
 {
     internal static partial class NativeMethods
     {
+        public const int MONITOR_DEFAULTTONULL = 0;
+        public const int MONITOR_DEFAULTTOPRIMARY = 1;
+        public const int MONITOR_DEFAULTTONEAREST = 2;
+
         public const int WH_JOURNALPLAYBACK = 1,
         WH_GETMESSAGE = 3,
         WH_MOUSE = 7,

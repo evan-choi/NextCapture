@@ -1,18 +1,12 @@
 ﻿using NextCapture.Interop;
 using System;
-using System.Linq;
-using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Drawing;
-using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace NextCapture.Utils
 {
     internal static class SystemCursor
     {
-        const string TempFileName = "blank_cursor";
-
         public static void Show()
         {
             UnsafeNativeMethods.SystemParametersInfo(
@@ -34,24 +28,13 @@ namespace NextCapture.Utils
 
         private static IntPtr LoadBlankCursor()
         {
-            try
+            using (var ms = new MemoryStream(Properties.Resources.trans))
             {
-                IntPtr result;
-
-                if (!File.Exists(TempFileName))
-                    File.WriteAllBytes(TempFileName, Properties.Resources.trans);
-
-                result = UnsafeNativeMethods.LoadCursorFromFile(TempFileName);
-
-                File.Delete(TempFileName);
-
-                return result;
+                using (var cursor = new Cursor(ms))
+                {
+                    return cursor.CopyHandle();
+                }
             }
-            catch
-            {
-            }
-
-            return IntPtr.Zero;
         }
     }
 }

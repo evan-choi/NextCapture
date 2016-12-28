@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 namespace NextCapture.Interop
@@ -353,6 +354,165 @@ namespace NextCapture.Interop
             CAPTUREBLT = 0x40000000
         }
 
+        [Flags]
+        public enum GetWindow : uint
+        {
+            GW_HWNDFIRST = 0,
+            GW_HWNDLAST = 1,
+            GW_HWNDNEXT = 2,
+            GW_HWNDPREV = 3,
+            GW_OWNER = 4,
+            GW_CHILD = 5,
+            GW_ENABLEDPOPUP = 6
+        }
+
+        [Flags]
+        public enum SystemMetrics : int
+        {
+            SM_CXBORDER = 5,
+            SM_CXFULLSCREEN = 16,
+            SM_CYFULLSCREEN = 17
+        }
+
+        [Flags]
+        public enum MouseEventFlags : uint
+        {
+            LEFTDOWN = 0x00000002,
+            LEFTUP = 0x00000004,
+            MIDDLEDOWN = 0x00000020,
+            MIDDLEUP = 0x00000040,
+            MOVE = 0x00000001,
+            ABSOLUTE = 0x00008000,
+            RIGHTDOWN = 0x00000008,
+            RIGHTUP = 0x00000010,
+            WHEEL = 0x00000800,
+            XDOWN = 0x00000080,
+            XUP = 0x00000100
+        }
+
+        [Flags]
+        public enum PenStyle : int
+        {
+            PS_SOLID = 0,
+            PS_DASH = 1, 
+            PS_DOT = 2, 
+            PS_DASHDOT = 3,
+            PS_DASHDOTDOT = 4,
+            PS_NULL = 5,
+            PS_INSIDEFRAME = 6,
+            PS_USERSTYLE = 7,
+            PS_ALTERNATE = 8,
+            PS_STYLE_MASK = 0x0000000F,
+
+            PS_ENDCAP_ROUND = 0x00000000,
+            PS_ENDCAP_SQUARE = 0x00000100,
+            PS_ENDCAP_FLAT = 0x00000200,
+            PS_ENDCAP_MASK = 0x00000F00,
+
+            PS_JOIN_ROUND = 0x00000000,
+            PS_JOIN_BEVEL = 0x00001000,
+            PS_JOIN_MITER = 0x00002000,
+            PS_JOIN_MASK = 0x0000F000,
+
+            PS_COSMETIC = 0x00000000,
+            PS_GEOMETRIC = 0x00010000,
+            PS_TYPE_MASK = 0x000F0000
+        };
+
+        [Flags]
+        public enum BinaryRasterOperations
+        {
+            R2_BLACK = 1,
+            R2_NOTMERGEPEN = 2,
+            R2_MASKNOTPEN = 3,
+            R2_NOTCOPYPEN = 4,
+            R2_MASKPENNOT = 5,
+            R2_NOT = 6,
+            R2_XORPEN = 7,
+            R2_NOTMASKPEN = 8,
+            R2_MASKPEN = 9,
+            R2_NOTXORPEN = 10,
+            R2_NOP = 11,
+            R2_MERGENOTPEN = 12,
+            R2_COPYPEN = 13,
+            R2_MERGEPENNOT = 14,
+            R2_MERGEPEN = 15,
+            R2_WHITE = 16
+        }
+
+        [Flags]
+        public enum StockObjects
+        {
+            WHITE_BRUSH = 0,
+            LTGRAY_BRUSH = 1,
+            GRAY_BRUSH = 2,
+            DKGRAY_BRUSH = 3,
+            BLACK_BRUSH = 4,
+            NULL_BRUSH = 5,
+            HOLLOW_BRUSH = NULL_BRUSH,
+            WHITE_PEN = 6,
+            BLACK_PEN = 7,
+            NULL_PEN = 8,
+            OEM_FIXED_FONT = 10,
+            ANSI_FIXED_FONT = 11,
+            ANSI_VAR_FONT = 12,
+            SYSTEM_FONT = 13,
+            DEVICE_DEFAULT_FONT = 14,
+            DEFAULT_PALETTE = 15,
+            SYSTEM_FIXED_FONT = 16,
+            DEFAULT_GUI_FONT = 17,
+            DC_BRUSH = 18,
+            DC_PEN = 19,
+        }
+
+        [Flags]
+        public enum SysCommands : int
+        {
+            SC_SIZE = 0xF000,
+            SC_MOVE = 0xF010,
+            SC_MINIMIZE = 0xF020,
+            SC_MAXIMIZE = 0xF030,
+            SC_NEXTWINDOW = 0xF040,
+            SC_PREVWINDOW = 0xF050,
+            SC_CLOSE = 0xF060,
+            SC_VSCROLL = 0xF070,
+            SC_HSCROLL = 0xF080,
+            SC_MOUSEMENU = 0xF090,
+            SC_KEYMENU = 0xF100,
+            SC_ARRANGE = 0xF110,
+            SC_RESTORE = 0xF120,
+            SC_TASKLIST = 0xF130,
+            SC_SCREENSAVE = 0xF140,
+            SC_HOTKEY = 0xF150,
+            SC_DEFAULT = 0xF160,
+            SC_MONITORPOWER = 0xF170,
+            SC_CONTEXTHELP = 0xF180,
+            SC_SEPARATOR = 0xF00F,
+            SCF_ISSECURE = 0x00000001,
+            SC_ICON = SC_MINIMIZE,
+            SC_ZOOM = SC_MAXIMIZE,
+        }
+
+        [Flags]
+        public enum SWP
+        {
+            ASYNCWINDOWPOS = 0x4000,
+            DEFERERASE = 0x2000,
+            DRAWFRAME = 0x0020,
+            FRAMECHANGED = 0x0020,
+            HIDEWINDOW = 0x0080,
+            NOACTIVATE = 0x0010,
+            NOCOPYBITS = 0x0100,
+            NOMOVE = 0x0002,
+            NOOWNERZORDER = 0x0200,
+            NOREDRAW = 0x0008,
+            NOREPOSITION = 0x0200,
+            NOSENDCHANGING = 0x0400,
+            NOSIZE = 0x0001,
+            NOZORDER = 0x0004,
+            SHOWWINDOW = 0x0040,
+        }
+
         internal class NONCLIENTMETRICS
         {
             public int cbSize = Marshal.SizeOf(typeof(NONCLIENTMETRICS));
@@ -375,6 +535,25 @@ namespace NextCapture.Interop
             public SafeNativeMethods.LOGFONT lfStatusFont = default(SafeNativeMethods.LOGFONT);
             [MarshalAs(UnmanagedType.Struct)]
             public SafeNativeMethods.LOGFONT lfMessageFont = default(SafeNativeMethods.LOGFONT);
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Auto)]
+        public struct MONITORINFO
+        {
+            public int cbSize;
+            public RECT rcMonitor;
+            public RECT rcWork;
+            public uint dwFlags;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MINMAXINFO
+        {
+            public Point ptReserved;
+            public Point ptMaxSize;
+            public Point ptMaxPosition;
+            public Point ptMinTrackSize;
+            public Point ptMaxTrackSize;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -421,6 +600,14 @@ namespace NextCapture.Interop
                 get
                 {
                     return new System.Drawing.Size(this.right - this.left, this.bottom - this.top);
+                }
+            }
+
+            public System.Drawing.Point Location
+            {
+                get
+                {
+                    return new System.Drawing.Point(this.left, this.top);
                 }
             }
 

@@ -67,13 +67,17 @@
     <Compile Include="Input\Keyboard\KeyboardHookEventArgs.cs" />
     <Compile Include="Input\Keyboard\Keys.cs" />
     <Compile Include="Input\Keyboard\KeysConverter.cs" />
+    <Compile Include="Input\Mouse\Mouse.cs" />
     <Compile Include="Input\Mouse\MouseHook.cs" />
     <Compile Include="Interop\Constants.cs" />
+    <Compile Include="Model\CaptureModeChangedEventArgs.cs" />
+    <Compile Include="Model\FocusedWindowEventArgs.cs" />
+    <Compile Include="Model\ValueChangedEventArgs.cs" />
     <Compile Include="Utils\Dispatcher.cs" />
-    <Compile Include="Utils\HwndHelper.cs" />
-    <Compile Include="Utils\RectangleEx.cs" />
+    <Compile Include="Extensions\RectangleEx.cs" />
     <Compile Include="Utils\ScreenCapture.cs" />
-    <Compile Include="Windows\AeroWindow.cs">
+    <Compile Include="Utils\WindowHelper.cs" />
+    <Compile Include="Windows\Base\AeroWindow.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Windows\DragWindow.cs">
@@ -92,7 +96,13 @@
     <Compile Include="Interop\UnsafeNativeMethods.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Windows\LayeredWindow.cs">
+    <Compile Include="Windows\Base\LayeredWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Windows\Base\NextWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Windows\MessageWindow.cs">
       <SubType>Form</SubType>
     </Compile>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -105,9 +115,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="Windows\InfoWindow.resx">
-      <DependentUpon>InfoWindow.cs</DependentUpon>
-    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -124,9 +131,18 @@
   <ItemGroup>
     <None Include="Resources\trans.cur" />
     <None Include="Resources\close.png" />
-    <None Include="Resources\icon.png" />
+    <None Include="Resources\logo.png" />
     <None Include="Resources\Cross.png" />
     <None Include="Resources\icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\camera.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\shutter.mp3" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\shutter.wav" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

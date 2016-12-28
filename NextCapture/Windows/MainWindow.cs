@@ -14,52 +14,34 @@ using NextCapture.Interop;
 using System.Runtime.InteropServices;
 using NextCapture.Utils;
 using System.IO;
+using System.Media;
 
 namespace NextCapture
 {
     public sealed class MainWindow : LayeredWindow, IHookFilter<MouseStruct>
     {
         int lastZOrder = 0;
-
-        NotifyIcon notify;
+        
         SolidBrush whiteBrush;
-
         DragWindow dWindow;
 
         public MainWindow() : base()
         {
-            InitializeNotify();
             InitializeDrag();
-
+            
             whiteBrush = new SolidBrush(Color.FromArgb((int)(255 * 0.4), Color.White));
 
             Program.MouseHook.Filters.Add(this);
             Program.OSXCapture.CaptureModeChanged += OSXCapture_CaptureModeChanged;
             Program.OSXCapture.BeginDragCapture += OSXCapture_BeginDragCapture;
             Program.OSXCapture.EndDragCapture += OSXCapture_EndDragCapture;
+            Program.OSXCapture.FocusedWindowChanged += OSXCapture_FocusedWindowChanged;
         }
-
+        
         private void InitializeDrag()
         {
             dWindow = new DragWindow();
             this.Owner = dWindow;
-        }
-
-        private void InitializeNotify()
-        {
-            var ctx = new ContextMenu();
-            ctx.MenuItems.Add(new MenuItem("NextCapture 정보", NotifyIcon_Info));
-            ctx.MenuItems.Add(new MenuItem("-"));
-            ctx.MenuItems.Add(new MenuItem("종료", NotifyIcon_Close));
-
-            notify = new NotifyIcon()
-            {
-                Icon = Properties.Resources.icon,
-                Text = "NextCapture",
-                ContextMenu = ctx
-            };
-
-            notify.Visible = true;
         }
 
         void HideDragLayer()
@@ -79,53 +61,48 @@ namespace NextCapture
             ClearLayer();
             HideDragLayer();
         }
-
+        
         private void OSXCapture_BeginDragCapture(object sender, Point e)
         {
             ShowDragLayer(e);
             UpdateLayout(e, Point.Empty);
         }
 
-        private void OSXCapture_CaptureModeChanged(object sender, EventArgs e)
+        private void OSXCapture_FocusedWindowChanged(object sender, FocusedWindowEventArgs e)
         {
-            switch (Program.OSXCapture.CaptureMode)
+            WindowHelper.HideHighlight(e.OldValue);
+            WindowHelper.ShowHighlight(e.NewValue);
+        }
+
+        private void OSXCapture_CaptureModeChanged(object sender, CaptureModeChangedEventArgs e)
+        {
+            switch (e.NewValue)
             {
                 case Core.CaptureMode.Unknown:
-                    SystemCursor.Show();
+                    if (e.OldValue == Core.CaptureMode.Window)
+                    {
+                        var mw = new MessageWindow(Config.AppName, "Comming soon!");
 
+                        mw.Show();
+                        mw.Activate();
+                    }
+
+                    SystemCursor.Show();
                     HideDragLayer();
                     ClearLayer();
-
                     break;
 
                 case Core.CaptureMode.Drag:
+                case Core.CaptureMode.Window:
                     SystemCursor.Hide();
-
                     UpdateLayout(MousePosition, MousePosition);
+                    break;
 
+                case Core.CaptureMode.FullScreen:
                     break;
             }
         }
-
-        private void NotifyIcon_Info(object sender, EventArgs e)
-        {
-            var infoWindow = new InfoWindow();
-
-            infoWindow.Show();
-            infoWindow.Activate();
-        }
-
-        private void NotifyIcon_Close(object sender, EventArgs e)
-        {
-            this.Close();
-        }
-
-        protected override void OnClosed(EventArgs e)
-        {
-            notify.Visible = false;
-            base.OnClosed(e);
-        }
-
+        
         protected override void OnLostFocus(EventArgs e)
         {
             base.OnLostFocus(e);
@@ -134,10 +111,39 @@ namespace NextCapture
 
         private void UpdateLayout(Point position, Point displayPosition)
         {
-            var cross = Properties.Resources.Cross;
-            var bmp = new Bitmap(cross.Width + 30, cross.Height + 15);
+            this.SuspendLayout();
 
-            using (var g = Graphics.FromImage(bmp))
+            Bitmap bmp;
+            Point offset = Point.Empty;
+
+            if (Program.OSXCapture.CaptureMode == Core.CaptureMode.Window)
+            {
+                bmp = new Bitmap(Properties.Resources.camera);
+            }
+            else
+            {
+                DrawCrossHair(out bmp, position, displayPosition);
+                offset = new Point(15, 8);
+            }
+
+            this.Location = position - 
+                new Size((int)Math.Floor(bmp.Width / 2f), (int)Math.Floor(bmp.Height / 2f)) + (Size)offset;
+
+            DrawBitmap(bmp, 255);
+            bmp.Dispose();
+
+            // ISSUE: Catch the behind to window
+            UpdateOnTop();
+
+            this.ResumeLayout(false);
+        }
+
+        void DrawCrossHair(out Bitmap bitmap, Point position, Point displayPosition)
+        {
+            var cross = Properties.Resources.Cross;
+            bitmap = new Bitmap(cross.Width + 30, cross.Height + 16);
+
+            using (var g = Graphics.FromImage(bitmap))
             {
                 g.DrawImage(cross, new Rectangle(0, 0, cross.Width, cross.Height));
 
@@ -151,16 +157,8 @@ namespace NextCapture
 
                     g.DrawString(displayPosition.X.ToString(), f, Brushes.Black, xPt);
                     g.DrawString(displayPosition.Y.ToString(), f, Brushes.Black, yPt);
-                }   
+                }
             }
-
-            this.Location = position - new Size(cross.Width / 2, cross.Height / 2);
-
-            DrawBitmap(bmp, 255);
-            bmp.Dispose();
-
-            // ISSUE: Catch the behind to window
-            UpdateOnTop();
         }
 
         void UpdateOnTop()
@@ -174,30 +172,56 @@ namespace NextCapture
 
             lastZOrder = zorder;
         }
-
+        
         bool IHookFilter<MouseStruct>.HookProc(IntPtr wParam, IntPtr lParam, MouseStruct data)
         {
             if (Program.OSXCapture.CaptureMode != Core.CaptureMode.Unknown)
             {
-                Point position = MousePosition;
+                Rectangle screen = Screen.FromPoint(MousePosition).Bounds;
+
+                Point position = ClipPoint(new Point(data.x, data.y), screen);
                 Point display = position;
-
-                if (Program.OSXCapture.IsDragging)
+                
+                switch (Program.OSXCapture.CaptureMode)
                 {
-                    var rect = RectangleEx.GetRectangle(dWindow.DragStartPosition, MousePosition);
+                    case Core.CaptureMode.Drag:
+                        // Drag Layer Update
+                        if (Program.OSXCapture.IsDragging)
+                        {
+                            var rect = RectangleEx.GetRectangle(dWindow.DragStartPosition, MousePosition);
 
-                    display = (Point)rect.Size;
+                            display = (Point)rect.Size;
+                            
+                            dWindow?.UpdateLayout(position);
+                        }
+                        break;
+
+                    //case Core.CaptureMode.Window:
+                    //    IntPtr hwnd = WindowHelper.ChildFromPoint(MousePosition);
+
+                    //    if (hwnd != Program)
+                    //    {
+                    //        WindowHelper.HideHighlight(focusedWindow);
+                    //        WindowHelper.ShowHighlight(hwnd);
+
+                    //        focusedWindow = hwnd;
+                    //    }
+                        
+                    //    break;
                 }
 
                 this.UpdateLayout(position, display);
             }
-            
-            if (dWindow != null && Program.OSXCapture.IsDragging)
-            {
-                dWindow.UpdateLayout(MousePosition);
-            }
 
             return false;
+        }
+
+        Point ClipPoint(Point point, Rectangle rect)
+        {
+            point.X = Math.Min(Math.Max(point.X, rect.Left), rect.Right);
+            point.Y = Math.Min(Math.Max(point.Y, rect.Top), rect.Bottom);
+
+            return point;
         }
     }
 }

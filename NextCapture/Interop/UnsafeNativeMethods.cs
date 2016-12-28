@@ -7,6 +7,9 @@ namespace NextCapture.Interop
 {
     internal static class UnsafeNativeMethods
     {
+        [DllImport(ExternDll.User32)]
+        public static extern bool GetCursorPos(out Point point);
+
         [DllImport(ExternDll.User32, SetLastError = true)]
         public static extern bool SystemParametersInfo(NativeMethods.SPI uiAction, uint uiParam, IntPtr pvParam, NativeMethods.SPIF fWinIni);
 
@@ -60,6 +63,15 @@ namespace NextCapture.Interop
         [DllImport(ExternDll.Gdi32, CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr SelectObject(IntPtr hDC, IntPtr hObject);
 
+        [DllImport(ExternDll.Gdi32)]
+        public static extern uint Rectangle(IntPtr hdc, int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
+
+        [DllImport(ExternDll.Gdi32)]
+        public static extern IntPtr GetStockObject(int fnObject);
+
+        [DllImport(ExternDll.Gdi32)]
+        public static extern IntPtr CreatePen(int fnPenStyle, int nWidth, uint crColor);
+
         [DllImport(ExternDll.Gdi32, CharSet = CharSet.Auto, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool DeleteObject(IntPtr hObject);
@@ -70,6 +82,9 @@ namespace NextCapture.Interop
         [DllImport(ExternDll.Gdi32, EntryPoint = "BitBlt", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool BitBlt([In] IntPtr hdc, int nXDest, int nYDest, int nWidth, int nHeight, [In] IntPtr hdcSrc, int nXSrc, int nYSrc, NativeMethods.TernaryRasterOperations dwRop);
+
+        [DllImport(ExternDll.Gdi32)]
+        public static extern int SetROP2(IntPtr hdc, int fnDrawMode);
 
         [DllImport(ExternDll.User32)]
         public static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
@@ -98,6 +113,48 @@ namespace NextCapture.Interop
 
         [DllImport(ExternDll.DwmAPI)]
         public static extern int DwmIsCompositionEnabled(ref int pfEnabled);
+
+        [DllImport(ExternDll.User32)]
+        public static extern IntPtr WindowFromPoint(Point point);
+
+        [DllImport(ExternDll.User32)]
+        public static extern bool ScreenToClient(IntPtr handle, ref Point point);
+
+        [DllImport(ExternDll.User32)]
+        public static extern IntPtr ChildWindowFromPointEx(IntPtr hWndParent, Point pt, uint uFlags);
+
+        [DllImport(ExternDll.User32)]
+        public static extern bool ClientToScreen(IntPtr hwnd, ref Point lpPoint);
+
+        [DllImport(ExternDll.User32)]
+        public static extern bool IsChild(IntPtr hWndParent, IntPtr hWnd);
+
+        [DllImport(ExternDll.User32)]
+        public static extern IntPtr GetParent(IntPtr hWnd);
+
+        [DllImport(ExternDll.User32)]
+        public static extern bool GetWindowRect(IntPtr hWnd, ref NativeMethods.RECT lpRect);
+
+        [DllImport(ExternDll.User32)]
+        public static extern int GetSystemMetrics(int smIndex);
+
+        [DllImport(ExternDll.User32)]
+        public static extern IntPtr GetWindowDC(IntPtr hWnd);
+
+        [DllImport(ExternDll.User32, CharSet = CharSet.Auto)]
+        public static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, IntPtr wParam, IntPtr lParam);
+
+        [DllImport(ExternDll.User32)]
+        public static extern bool InvalidateRect(IntPtr hWnd, IntPtr lpRect, bool bErase);
+
+        [DllImport(ExternDll.User32)]
+        public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint dwData, UIntPtr dwExtraInfo);
+
+        [DllImport(ExternDll.User32)]
+        public static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+        [DllImport(ExternDll.User32)]
+        public static extern bool GetMonitorInfo(IntPtr hMonitor, ref NativeMethods.MONITORINFO lpmi);
 
         public enum HookType : int
         {

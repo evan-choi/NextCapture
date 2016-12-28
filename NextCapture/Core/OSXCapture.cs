@@ -5,12 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using MouseStruct = NextCapture.Interop.NativeMethods.MOUSEHOOKSTRUCT;
 using NextCapture.Interop;
+using NextCapture.Input.Mouse;
+using System.Runtime.InteropServices;
+using System.Media;
+using System.Diagnostics;
 
 namespace NextCapture.Core
 {
@@ -29,11 +31,10 @@ namespace NextCapture.Core
         Clipboard = 2
     }
 
-
     internal class OSXCapture : IHookFilter<MouseStruct>
     {
-        public event EventHandler CaptureModeChanged;
-
+        public event EventHandler<CaptureModeChangedEventArgs> CaptureModeChanged;
+        public event EventHandler<FocusedWindowEventArgs> FocusedWindowChanged;
         public event EventHandler<Point> BeginDragCapture;
         public event EventHandler<Point> EndDragCapture;
 
@@ -51,8 +52,10 @@ namespace NextCapture.Core
             }
             private set
             {
+                var oldValue = _captureMode;
                 _captureMode = value;
-                CaptureModeChanged?.Invoke(this, null);
+
+                CaptureModeChanged?.Invoke(this, new CaptureModeChangedEventArgs(oldValue, value));
             }
         }
 
@@ -65,9 +68,20 @@ namespace NextCapture.Core
             }
         }
 
+        private IntPtr focusedWindow = IntPtr.Zero;
+        public IntPtr FocusedWindowHandle
+        {
+            get
+            {
+                return focusedWindow;
+            }
+        }
+
         private BitmapDataBus deskBus;
         private BitmapDataBus clipBus;
+
         private Point dragStartPosition;
+        private bool isVirtualDown = false;
 
         public OSXCapture()
         {
@@ -96,12 +110,37 @@ namespace NextCapture.Core
                 SubKeys = new[] { VKeys.D4 },
                 Action = new HotKeyEvent(Capture_Area)
             });
+
+            HotkeyManager.Register("Capture_Window", new Hotkey()
+            {
+                ModifierKey = VKeys.Space,
+                SubKeys = new[] { VKeys.Space },
+                Action = new HotKeyEvent(Capture_Window)
+            });
+        }
+
+        private void Capture_Window(Hotkey sender, HotkeyEventArgs e)
+        {
+            if (CaptureMode == CaptureMode.Drag)
+            {
+                CaptureMode = CaptureMode.Window;
+                e.Handled = true;
+            }
         }
 
         private void Capture_Cancel(Hotkey sender, HotkeyEventArgs e)
         {
-            CaptureMode = CaptureMode.Unknown;
-            SaveMode = SaveMode.Unknown;
+            if (CaptureMode != CaptureMode.Unknown)
+            {
+                if (CaptureMode == CaptureMode.Window)
+                {
+                    SetFocusedWindow(IntPtr.Zero);
+                }
+
+                CaptureMode = CaptureMode.Unknown;
+                SaveMode = SaveMode.Unknown;
+                e.Handled = true;
+            }
         }
 
         private void InitBitmapBuses()
@@ -172,9 +211,9 @@ namespace NextCapture.Core
                         break;
 
                     case CaptureMode.Drag:
-                        break;
-
                     case CaptureMode.Window:
+                        //isVirtualDown = true;
+                        //Mouse.LeftDown(int.MaxValue, int.MaxValue);
                         break;
                 }
             }
@@ -185,7 +224,7 @@ namespace NextCapture.Core
             CaptureMode = CaptureMode.Unknown;
 
             if (bitmap == null) return;
-
+            
             foreach (var bus in BitmapBuses.Reverse<IDataBus<Bitmap>>())
             {
                 if (bus.SendData(bitmap))
@@ -193,13 +232,37 @@ namespace NextCapture.Core
             }
         }
 
+        private void SetFocusedWindow(IntPtr newWindow)
+        {
+            IntPtr oldWindow = focusedWindow;
+            focusedWindow = newWindow;
+
+            if (newWindow != oldWindow)
+            {
+                FocusedWindowChanged?.Invoke(this, new FocusedWindowEventArgs(oldWindow, newWindow));
+            }
+        }
+
         public bool HookProc(IntPtr wParam, IntPtr lParam, MouseStruct data)
         {
             switch (wParam.ToInt32())
             {
+                case NativeMethods.WM_MOUSEMOVE:
+                    if (CaptureMode == CaptureMode.Window)
+                        SetFocusedWindow(WindowHelper.ChildFromPoint(Control.MousePosition));
+
+                    break;
+
                 case NativeMethods.WM_LBUTTONDOWN:
                     if (CaptureMode != CaptureMode.Unknown)
                     {
+                        // prevent mouse focusing
+                        if (isVirtualDown)
+                        {
+                            isVirtualDown = false;
+                            break;
+                        }
+
                         switch (CaptureMode)
                         {
                             case CaptureMode.Drag:
@@ -219,9 +282,11 @@ namespace NextCapture.Core
                     break;
 
                 case NativeMethods.WM_LBUTTONUP:
-                    if (CaptureMode == CaptureMode.Drag)
+                    if (CaptureMode == CaptureMode.Drag && isDragging)
                     {
                         isDragging = false;
+
+                        var sw = new Stopwatch();
 
                         var dragEndPosition = new Point(data.x, data.y);
                         EndDragCapture?.Invoke(this, dragEndPosition);
@@ -235,7 +300,13 @@ namespace NextCapture.Core
                     }
                     else if (CaptureMode == CaptureMode.Window)
                     {
-                        // TODO: End Win Focusing
+                        if (focusedWindow != IntPtr.Zero)
+                        {
+                            IntPtr captureHandle = focusedWindow;
+
+                            SetFocusedWindow(IntPtr.Zero);
+                            EndCapture(null/* ScreenCapture.Capture(captureHandle) */);
+                        }
                         return true;
                     }
                     break;

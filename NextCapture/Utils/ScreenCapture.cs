@@ -4,34 +4,76 @@ using System.Drawing;
 
 namespace NextCapture.Utils
 {
+    public class CaptureEventArgs : EventArgs
+    {
+        public IntPtr Target { get; set; }
+        public Rectangle Bounds { get; set; }
+        public Bitmap Bitmap { get; set; }
+        public bool Handled { get; set; }
+    }
+    
     public static class ScreenCapture
     {
+        public static event EventHandler<CaptureEventArgs> BeginCapture;
+        public static event EventHandler<CaptureEventArgs> EndCapture;
+
+        public static Bitmap Capture(IntPtr hwnd)
+        {
+            var rect = WindowHelper.GetWindowRect(hwnd);
+            rect.Location = Point.Empty;
+
+            return Capture(hwnd, rect);
+        }
+
         public static Bitmap Capture(Rectangle area)
+        {
+            return Capture(IntPtr.Zero, area);
+        }
+
+        private static Bitmap Capture(IntPtr hwnd, Rectangle area)
         {
             if (area.Width * area.Height <= 1)
                 return null;
 
-            IntPtr hDest = IntPtr.Zero;
+            var args = new CaptureEventArgs()
+            {
+                Target = hwnd,
+                Bounds = area
+            };
 
-            IntPtr hdc = UnsafeNativeMethods.GetDC(IntPtr.Zero);
-            hDest = UnsafeNativeMethods.CreateCompatibleDC(hdc);
+            BeginCapture?.Invoke(hwnd, args);
 
-            IntPtr hBitmap = UnsafeNativeMethods.CreateCompatibleBitmap(hdc, area.Width, area.Height);
+            try
+            {
+                if (!args.Handled)
+                {
+                    IntPtr hDest = IntPtr.Zero;
 
-            IntPtr m_obit = UnsafeNativeMethods.SelectObject(hDest, hBitmap);
+                    IntPtr hdc = UnsafeNativeMethods.GetDC(hwnd);
+                    hDest = UnsafeNativeMethods.CreateCompatibleDC(hdc);
 
-            UnsafeNativeMethods.BitBlt(hDest, 0, 0, area.Width, area.Height, hdc, area.X, area.Y, NativeMethods.TernaryRasterOperations.SRCCOPY);
+                    IntPtr hBitmap = UnsafeNativeMethods.CreateCompatibleBitmap(hdc, area.Width, area.Height);
 
-            Bitmap img = Image.FromHbitmap(hBitmap);
+                    IntPtr m_obit = UnsafeNativeMethods.SelectObject(hDest, hBitmap);
 
-            UnsafeNativeMethods.ReleaseDC(IntPtr.Zero, hdc);
-            UnsafeNativeMethods.DeleteDC(hDest);
-            UnsafeNativeMethods.DeleteObject(hBitmap);
+                    UnsafeNativeMethods.BitBlt(hDest, 0, 0, area.Width, area.Height, hdc, area.X, area.Y, NativeMethods.TernaryRasterOperations.SRCCOPY);
 
-            // 메모리릭 임시 방편
-            GC.Collect();
+                    args.Bitmap = Image.FromHbitmap(hBitmap);
 
-            return img;
+                    UnsafeNativeMethods.ReleaseDC(hwnd, hdc);
+                    UnsafeNativeMethods.DeleteDC(hDest);
+                    UnsafeNativeMethods.DeleteObject(hBitmap);
+
+                    // 메모리릭 임시 방편
+                    GC.Collect();
+                }
+            }
+            finally
+            {
+                EndCapture?.Invoke(hwnd, args);
+            }
+
+            return args.Bitmap;
         }
     }
 }

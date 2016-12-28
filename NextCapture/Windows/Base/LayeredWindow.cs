@@ -31,11 +31,16 @@ namespace NextCapture
 
             var ws = (WS)UnsafeNativeMethods.GetWindowLong(Handle, (int)GWL.STYLE);
             var wsex = (WSEX)UnsafeNativeMethods.GetWindowLong(Handle, (int)GWL.EXSTYLE);
-            
-            wsex |= WSEX.NOACTIVATE | WSEX.LAYERED | WSEX.TRANSPARENT;
+
+            //ws |= WS.POPUP;
+            //wsex |= WSEX.NOACTIVATE | WSEX.TOOLWINDOW | WSEX.LAYERED | WSEX.TRANSPARENT;
+            ws = WS.VISIBLE | WS.CLIPSIBLINGS | WS.CLIPCHILDREN | WS.SYSMENU | WS.THICKFRAME | WS.OVERLAPPED | WS.MINIMIZEBOX | WS.MAXIMIZEBOX;
+            wsex = WSEX.LEFT | WSEX.LTRREADING | WSEX.RIGHTSCROLLBAR | WSEX.WINDOWEDGE | WSEX.TOOLWINDOW | WSEX.LAYERED | WSEX.TRANSPARENT;
 
             UnsafeNativeMethods.SetWindowLong(Handle, (int)GWL.STYLE, (int)ws);
             UnsafeNativeMethods.SetWindowLong(Handle, (int)GWL.EXSTYLE, (int)wsex);
+
+            ClearLayer();
         }
 
         public bool IsSupportLayered()

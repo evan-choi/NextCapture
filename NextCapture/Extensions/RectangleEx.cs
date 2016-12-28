@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 
-namespace NextCapture.Utils
+namespace NextCapture
 {
     public static class RectangleEx 
     {
@@ -11,8 +11,8 @@ namespace NextCapture.Utils
             {
                 X = Math.Min(p1.X, p2.X),
                 Y = Math.Min(p1.Y, p2.Y),
-                Width = Math.Abs(p1.X - p2.X),
-                Height = Math.Abs(p1.Y - p2.Y)
+                Width = Math.Abs(p1.X - p2.X) + 1,
+                Height = Math.Abs(p1.Y - p2.Y) + 1
             };
         }
     }
