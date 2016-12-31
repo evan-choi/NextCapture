@@ -1,10 +1,15 @@
 ﻿using NextCapture.Core;
 using NextCapture.Input;
 using NextCapture.Input.Hotkey;
+using NextCapture.Model;
 using NextCapture.Utils;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Media;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace NextCapture
@@ -15,20 +20,45 @@ namespace NextCapture
         public static OSXCapture OSXCapture;
         public static NotifyIcon Notify;
 
+        static Dictionary<string, Assembly> assms = new Dictionary<string, Assembly>();
         static SoundPlayer ShutterPlayer;
 
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-
             Initialize();
             InitializeNotify();
+
+            var tw = new Windows.TestWindow();
+            tw.Show();
+
+            OSXCapture.FocusedWindowChanged += (s, e) =>
+            {
+                tw.Focus(e.NewValue);
+            };
 
             Application.Run(new MainWindow());
         }
 
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            ForceClose();
+        }
+
+        private static void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
+        {
+            ForceClose();
+        }
+
+        private static void ForceClose()
+        {
+            MouseHook.UnHook();
+            Keyboard.Hook.UnHook();
+            SystemCursor.Show();
+
+            Application.ExitThread();
+        }
+        
         public static void Close()
         {
             if (MouseHook != null)
@@ -41,7 +71,7 @@ namespace NextCapture
                 MouseHook = null;
                 Notify = null;
             }
-
+            
             Application.Exit();
         }
 
@@ -71,16 +101,29 @@ namespace NextCapture
 
         private static void Initialize()
         {
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
-            ScreenCapture.BeginCapture += ScreenCapture_BeginCapture;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            Application.ThreadException += Application_ThreadException;
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
 
             Dispatcher.Init();
             HotkeyManager.Init();
             SystemCursor.Show();
 
+            LoadAssembly("SharpDX.dll");
+            LoadAssembly("SharpDX.Direct3D11.dll");
+            LoadAssembly("SharpDX.DXGI.dll");
+
             ShutterPlayer = new SoundPlayer(Properties.Resources.shutter);
 
             OSXCapture = new OSXCapture();
+            
+            foreach (var engine in OSXCapture.CaptureEngines)
+                engine.BeginCapture += ScreenCapture_BeginCapture;
 
             MouseHook = new MouseHook();
             MouseHook.Hook();
@@ -99,6 +142,31 @@ namespace NextCapture
                 })
             });
 #endif
+        }
+
+        private static void LoadAssembly(string name)
+        {
+            var current = Assembly.GetExecutingAssembly();
+
+            string resource = current.GetManifestResourceNames()
+                .First(n => Regex.IsMatch(n, name, RegexOptions.IgnoreCase));
+
+            var stream = current.GetManifestResourceStream(resource);
+            byte[] buffer = new byte[stream.Length];
+
+            stream.Read(buffer, 0, buffer.Length);
+
+            var loadedAssm = Assembly.Load(buffer);
+
+            assms[loadedAssm.FullName] = loadedAssm;
+        }
+
+        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            if (assms.ContainsKey(args.Name))
+                return assms[args.Name];
+
+            return null;
         }
 
         private static void ScreenCapture_BeginCapture(object sender, CaptureEventArgs e)

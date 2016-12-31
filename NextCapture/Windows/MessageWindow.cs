@@ -33,11 +33,13 @@ namespace NextCapture
             this.StartPosition = FormStartPosition.Manual;
 
             var screen = Screen.FromPoint(MousePosition);
-            var contentSize = TextRenderer.MeasureText(content, this.Font);
-
+            var proposedSize = new Size((int)(screen.WorkingArea.Width * 0.75), (int)(screen.WorkingArea.Height * 0.9));
+            var contentSize = TextRenderer.MeasureText(content, this.Font, proposedSize,
+                TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter | TextFormatFlags.WordBreak);
+            
             this.Size = new Size(
-                2 + contentSize.Width + 128,
-                2 + contentSize.Height + 128);
+                Math.Min(proposedSize.Width, 2 + contentSize.Width + 128),
+                Math.Min(proposedSize.Height, 2 + contentSize.Height + 128));
 
             this.Location = new Point(
                 screen.WorkingArea.Width / 2 - Size.Width / 2,
@@ -52,18 +54,27 @@ namespace NextCapture
             var contentBrushes = new SolidBrush(Config.Color.Disabled);
 
             // content
-            var contentSize = e.Graphics.MeasureString(content, this.Font);
-            string[] lines = Regex.Split(content, "\r\n");
-            
-            for (int i = 0; i < lines.Length; i++)
-            {
-                var lineSize = e.Graphics.MeasureString(lines[i], this.Font);
-                var linePos = new Point(
-                    (int)(ContentWidth / 2 - lineSize.Width / 2),
-                    (int)(ContentHeight / 2 - contentSize.Height / 2 + (contentSize.Height / lines.Length * i)));
+            float offsetX = ContentWidth * 0.1f;
+            float offsetY = ContentHeight * 0.1f;
 
-                e.Graphics.DrawString(lines[i], this.Font, contentBrushes, linePos);
-            }
+            TextRenderer.DrawText(e.Graphics, content, this.Font,
+                new Rectangle(
+                    new Point((int)(1 + offsetX / 2), (int)(TitleHeight + offsetY / 2)),
+                    new Size((int)(ContentWidth - offsetX), (int)(ContentHeight - offsetY))),
+                Config.Color.Disabled, 
+                TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter | TextFormatFlags.WordBreak);
+            //var contentSize = e.Graphics.MeasureString(content, this.Font);
+            //string[] lines = Regex.Split(content, "\r\n");
+            
+            //for (int i = 0; i < lines.Length; i++)
+            //{
+            //    var lineSize = e.Graphics.MeasureString(lines[i], this.Font);
+            //    var linePos = new Point(
+            //        (int)(ContentWidth / 2 - lineSize.Width / 2),
+            //        (int)(ContentHeight / 2 - contentSize.Height / 2 + (contentSize.Height / lines.Length * i)));
+
+            //    e.Graphics.DrawString(lines[i], this.Font, contentBrushes, linePos);
+            //}
             
             // release resources
             contentBrushes.Dispose();

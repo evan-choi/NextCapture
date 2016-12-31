@@ -41,6 +41,9 @@ namespace NextCapture.Core
         public List<IDataBus<Bitmap>> BitmapBuses { get; } 
             = new List<IDataBus<Bitmap>>();
 
+        public List<ICaptureEngine> CaptureEngines { get; }
+            = new List<ICaptureEngine>();
+
         public SaveMode SaveMode { get; private set; } = SaveMode.Unknown;
 
         private CaptureMode _captureMode = CaptureMode.Unknown;
@@ -76,19 +79,25 @@ namespace NextCapture.Core
                 return focusedWindow;
             }
         }
-
+        
         private BitmapDataBus deskBus;
         private BitmapDataBus clipBus;
 
         private Point dragStartPosition;
-        private bool isVirtualDown = false;
 
         public OSXCapture()
         {
+            InitCaptureEngines();
             InitBitmapBuses();
             InitHotkey();
         }
-        
+
+        private void InitCaptureEngines()
+        {
+            CaptureEngines.Add(new DxCapture());
+            CaptureEngines.Add(new GdiCapture());
+        }
+
         private void InitHotkey()
         {
             HotkeyManager.Register("Capture_Cancel", new Hotkey()
@@ -119,6 +128,22 @@ namespace NextCapture.Core
             });
         }
 
+        private void InitBitmapBuses()
+        {
+            BitmapBuses.Add(
+                deskBus = new DesktopBus()
+                {
+                    Enabled = true
+                });
+
+            BitmapBuses.Add(
+                clipBus = new ClipboardBus()
+                {
+                    Enabled = false
+                });
+        }
+
+        #region [ Hotkey ]
         private void Capture_Window(Hotkey sender, HotkeyEventArgs e)
         {
             if (CaptureMode == CaptureMode.Drag)
@@ -142,22 +167,7 @@ namespace NextCapture.Core
                 e.Handled = true;
             }
         }
-
-        private void InitBitmapBuses()
-        {
-            BitmapBuses.Add(
-                deskBus = new DesktopBus()
-                {
-                    Enabled = true
-                });
-
-            BitmapBuses.Add(
-                clipBus = new ClipboardBus()
-                {
-                    Enabled = false
-                });
-        }
-
+        
         private void Capture_Area(Hotkey sender, HotkeyEventArgs e)
         {
             StartCapture(CaptureMode.Drag);
@@ -177,6 +187,21 @@ namespace NextCapture.Core
             }
 
             return false;
+        }
+        #endregion
+
+        private void RunCapture(Rectangle area)
+        {
+            foreach (var engine in CaptureEngines)
+            {
+                if (engine.CanCapture(area))
+                {
+                    EndCapture(engine.Capture(area));
+                    break;
+                }
+            }
+
+            EndCapture(null);
         }
 
         private void SendBitmap(Bitmap bitmap)
@@ -205,9 +230,7 @@ namespace NextCapture.Core
 
                     case CaptureMode.FullScreen:
                         var screen = Screen.FromPoint(Control.MousePosition);
-
-                        EndCapture(ScreenCapture.Capture(screen.Bounds));
-
+                        RunCapture(screen.Bounds);
                         break;
 
                     case CaptureMode.Drag:
@@ -256,13 +279,6 @@ namespace NextCapture.Core
                 case NativeMethods.WM_LBUTTONDOWN:
                     if (CaptureMode != CaptureMode.Unknown)
                     {
-                        // prevent mouse focusing
-                        if (isVirtualDown)
-                        {
-                            isVirtualDown = false;
-                            break;
-                        }
-
                         switch (CaptureMode)
                         {
                             case CaptureMode.Drag:
@@ -291,10 +307,10 @@ namespace NextCapture.Core
                         var dragEndPosition = new Point(data.x, data.y);
                         EndDragCapture?.Invoke(this, dragEndPosition);
 
-                        EndCapture(ScreenCapture.Capture(
+                        RunCapture(
                             RectangleEx.GetRectangle(
-                                dragStartPosition, 
-                                dragEndPosition)));
+                                dragStartPosition,
+                                dragEndPosition));
 
                         return true;
                     }

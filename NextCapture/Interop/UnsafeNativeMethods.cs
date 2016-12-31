@@ -136,6 +136,9 @@ namespace NextCapture.Interop
         public static extern bool GetWindowRect(IntPtr hWnd, ref NativeMethods.RECT lpRect);
 
         [DllImport(ExternDll.User32)]
+        public static extern bool GetClientRect(IntPtr hWnd, ref NativeMethods.RECT lpRect);
+
+        [DllImport(ExternDll.User32)]
         public static extern int GetSystemMetrics(int smIndex);
 
         [DllImport(ExternDll.User32)]

@@ -133,5 +133,13 @@ namespace NextCapture.Utils
 
             return new Rectangle(winRect.Location, winRect.Size);
         }
+
+        public static Rectangle GetClientRect(IntPtr hwnd)
+        {
+            var winRect = new NativeMethods.RECT();
+            UnsafeNativeMethods.GetClientRect(hwnd, ref winRect);
+
+            return new Rectangle(winRect.Location, winRect.Size);
+        }
     }
 }

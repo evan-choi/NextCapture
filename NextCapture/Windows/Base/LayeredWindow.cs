@@ -18,11 +18,7 @@ namespace NextCapture
 
         public LayeredWindow()
         {
-            this.SuspendLayout();
-            this.FormBorderStyle = FormBorderStyle.None;
             this.ShowInTaskbar = false;
-            this.TopMost = true;
-            this.ResumeLayout(false);
         }
 
         protected override void CreateHandle()
@@ -31,11 +27,9 @@ namespace NextCapture
 
             var ws = (WS)UnsafeNativeMethods.GetWindowLong(Handle, (int)GWL.STYLE);
             var wsex = (WSEX)UnsafeNativeMethods.GetWindowLong(Handle, (int)GWL.EXSTYLE);
-
-            //ws |= WS.POPUP;
-            //wsex |= WSEX.NOACTIVATE | WSEX.TOOLWINDOW | WSEX.LAYERED | WSEX.TRANSPARENT;
-            ws = WS.VISIBLE | WS.CLIPSIBLINGS | WS.CLIPCHILDREN | WS.SYSMENU | WS.THICKFRAME | WS.OVERLAPPED | WS.MINIMIZEBOX | WS.MAXIMIZEBOX;
-            wsex = WSEX.LEFT | WSEX.LTRREADING | WSEX.RIGHTSCROLLBAR | WSEX.WINDOWEDGE | WSEX.TOOLWINDOW | WSEX.LAYERED | WSEX.TRANSPARENT;
+            
+            ws = WS.VISIBLE | WS.OVERLAPPED | WS.POPUP;
+            wsex = WSEX.APPWINDOW | WSEX.LAYERED | WSEX.TRANSPARENT | WSEX.TOPMOST;
 
             UnsafeNativeMethods.SetWindowLong(Handle, (int)GWL.STYLE, (int)ws);
             UnsafeNativeMethods.SetWindowLong(Handle, (int)GWL.EXSTYLE, (int)wsex);
